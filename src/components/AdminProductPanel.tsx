@@ -120,19 +120,20 @@ export function AdminProductPanel() {
       );
     }
 
+    const mainImageUrl = form.imageUrl.trim();
     const typedImageUrls = form.imageUrls
       .split("\n")
       .map((url) => url.trim())
-      .filter(Boolean);
-    const imageUrls = [...uploadedImageUrls, ...typedImageUrls, form.imageUrl]
-      .map((url) => url.trim())
+      .filter(Boolean)
+      .filter((url) => url !== mainImageUrl);
+    const imageUrls = [mainImageUrl, ...uploadedImageUrls, ...typedImageUrls]
       .filter(Boolean);
     const product: Product = {
       name: form.name,
       slug,
       categorySlug: form.categorySlug,
       price: Number(form.price),
-      imageUrl: imageUrls[0] ?? form.imageUrl,
+      imageUrl: mainImageUrl || imageUrls[0] || "",
       imageUrls,
       videoUrl: form.videoUrl || undefined,
       summary: form.summary,

@@ -62,6 +62,21 @@ export function CheckoutForm({ fallbackProduct }: CheckoutFormProps) {
         items,
         total,
       });
+      await fetch("/api/orders/notify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          orderNumber,
+          fullName,
+          email,
+          phone,
+          addressLine1,
+          addressLine2,
+          city,
+          items,
+          total,
+        }),
+      }).catch(() => null);
       saveCartItems([]);
       setSuccessOrderNumber(orderNumber);
       setMessage("");
