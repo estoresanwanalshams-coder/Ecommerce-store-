@@ -1,13 +1,9 @@
-import { CategorySidebar } from "@/components/CategorySidebar";
 import { ProductGrid } from "@/components/ProductGrid";
-import { products } from "@/lib/products";
 
 export default function CategoriesPage() {
   return (
     <section className="page-shell bg-zinc-50">
-      <div className="mx-auto grid max-w-7xl gap-8 px-4 py-12 sm:px-6 lg:grid-cols-[260px_1fr] lg:px-8">
-        <CategorySidebar />
-
+      <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
         <div className="content-reveal">
           <p className="text-sm font-semibold uppercase tracking-wider text-zinc-500">
             All categories
@@ -16,11 +12,10 @@ export default function CategoriesPage() {
             All products
           </h1>
           <p className="mt-4 max-w-2xl text-base leading-7 text-zinc-600">
-            Browse every product across all categories. Use the sidebar to switch
-            quickly to one product category.
+            Browse every product across all categories in one place.
           </p>
           <div className="mt-8">
-            <ProductGrid baseProducts={products} />
+            <ProductGrid />
           </div>
         </div>
       </div>

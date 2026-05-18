@@ -56,7 +56,18 @@ export function Footer() {
       </div>
 
       <div className="border-t border-white/10 px-4 py-5 text-center text-sm text-zinc-400">
-        &copy; 2026 Storefront. All rights reserved.
+        <p>&copy; 2026 Storefront. All rights reserved.</p>
+        <p className="mt-2">
+          Designed and developed by{" "}
+          <a
+            href="https://hussainiitservices.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-semibold text-white transition hover:text-zinc-200"
+          >
+            hussainiitservices.com
+          </a>
+        </p>
       </div>
     </footer>
   );

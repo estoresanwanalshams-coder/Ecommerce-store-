@@ -7,56 +7,58 @@ import type { Product } from "@/lib/products";
 import { fetchSupabaseProducts } from "@/lib/supabase-products";
 
 type ProductGridProps = {
-  baseProducts: Product[];
   categorySlug?: CategorySlug;
   limit?: number;
 };
 
-export function ProductGrid({
-  baseProducts,
-  categorySlug,
-  limit,
-}: ProductGridProps) {
-  const [supabaseProducts, setSupabaseProducts] = useState<Product[]>([]);
+export function ProductGrid({ categorySlug, limit }: ProductGridProps) {
+  const [products, setProducts] = useState<Product[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     async function loadProducts() {
       try {
-        setSupabaseProducts(await fetchSupabaseProducts());
+        setProducts(await fetchSupabaseProducts());
       } catch {
-        setSupabaseProducts([]);
+        setProducts([]);
+      } finally {
+        setIsLoading(false);
       }
     }
 
     const timer = window.setTimeout(loadProducts, 0);
 
-    return () => {
-      window.clearTimeout(timer);
-    };
+    return () => window.clearTimeout(timer);
   }, []);
 
   const visibleProducts = useMemo(() => {
-    const mergedProducts =
-      supabaseProducts.length > 0 ? supabaseProducts : baseProducts;
     const filteredProducts = categorySlug
-      ? mergedProducts.filter((product) => product.categorySlug === categorySlug)
-      : mergedProducts;
+      ? products.filter((product) => product.categorySlug === categorySlug)
+      : products;
 
     return typeof limit === "number"
       ? filteredProducts.slice(0, limit)
       : filteredProducts;
-  }, [supabaseProducts, baseProducts, categorySlug, limit]);
+  }, [products, categorySlug, limit]);
+
+  if (isLoading) {
+    return (
+      <div className="rounded-2xl border border-dashed border-zinc-300 bg-white p-8 text-center text-zinc-600">
+        Loading products...
+      </div>
+    );
+  }
 
   if (visibleProducts.length === 0) {
     return (
       <div className="rounded-2xl border border-dashed border-zinc-300 bg-white p-8 text-center text-zinc-600">
-        No products found in this section.
+        No products available yet. Add products from the admin panel.
       </div>
     );
   }
 
   return (
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+    <div className="product-grid">
       {visibleProducts.map((product, index) => (
         <ProductCard key={product.slug} product={product} index={index + 1} />
       ))}

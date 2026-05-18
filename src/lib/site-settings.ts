@@ -19,8 +19,7 @@ type SiteSettingsRow = {
 
 export const defaultSiteSettings: SiteSettings = {
   offerText: "Free shipping on orders over Rs. 999 | New season offers are live",
-  bannerImageUrl:
-    "https://images.unsplash.com/photo-1556911220-bff31c812dba?auto=format&fit=crop&w=900&q=80",
+  bannerImageUrl: "/banners/banner-1.png",
   newArrivalSlugs: [],
   bestSellerSlugs: [],
   featuredSlugs: [],

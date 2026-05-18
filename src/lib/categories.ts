@@ -34,6 +34,29 @@ export const categories: Category[] = [
 
 export type CategorySlug = string;
 
-export function getCategoryBySlug(slug: string) {
-  return categories.find((category) => category.slug === slug);
+export function getCategoryBySlug(
+  slug: string,
+  categoryList: Category[] = categories,
+) {
+  return categoryList.find((category) => category.slug === slug);
 }
+
+/** Merges Supabase categories with built-in defaults (remote wins on slug conflict). */
+export function mergeCategories(
+  remoteCategories: Category[],
+  localCategories: Category[] = [...categories],
+): Category[] {
+  const merged = new Map<string, Category>();
+
+  for (const category of localCategories) {
+    merged.set(category.slug, category);
+  }
+
+  for (const category of remoteCategories) {
+    merged.set(category.slug, category);
+  }
+
+  return Array.from(merged.values());
+}
+
+export const adminCategoriesUpdatedEvent = "admin-categories:updated";

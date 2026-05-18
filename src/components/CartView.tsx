@@ -94,20 +94,10 @@ export function CartView() {
                 key={item.product.slug}
                 className="cart-row rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm"
               >
-                <Link
-                  href={`/products/${item.product.slug}`}
-                  className="block h-28 w-28 shrink-0 rounded-xl bg-cover bg-center"
-                  style={{ backgroundImage: `url(${item.product.imageUrl})` }}
-                  aria-label={`Open ${item.product.name}`}
-                />
-
                 <div className="min-w-0 flex-1">
                   <h2 className="text-lg font-bold text-zinc-950">
                     {item.product.name}
                   </h2>
-                  <p className="mt-1 line-clamp-2 text-sm leading-6 text-zinc-600">
-                    {item.product.summary}
-                  </p>
                   <button
                     type="button"
                     onClick={() => removeItem(item.product.slug)}
@@ -118,9 +108,6 @@ export function CartView() {
                 </div>
 
                 <div className="flex flex-col items-end gap-4">
-                  <p className="text-lg font-bold text-zinc-950">
-                    AED {item.product.price * item.quantity}
-                  </p>
                   <div className="quantity-control">
                     <button
                       type="button"
@@ -179,7 +166,7 @@ export function CartView() {
             href={`/inquiry/${items[0].product.slug}`}
             className="animated-button mt-7 flex rounded-md bg-white px-6 py-3 text-center text-sm font-bold text-zinc-950 transition hover:bg-zinc-200"
           >
-            Checkout
+            Buy Now
           </Link>
           <Link
             href="/categories"

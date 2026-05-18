@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { createProductSlug } from "@/lib/admin-products";
 import {
+  adminCategoriesUpdatedEvent,
   categories as fallbackCategories,
   type Category,
   type CategorySlug,
@@ -13,13 +14,15 @@ import {
   fetchSupabaseProducts,
   upsertSupabaseProduct,
 } from "@/lib/supabase-products";
-import { fetchSupabaseCategories } from "@/lib/supabase-categories";
+import { fetchMergedCategories } from "@/lib/supabase-categories";
 
 const emptyForm = {
   name: "",
   categorySlug: "home-and-kitchen" as CategorySlug,
   price: "",
   imageUrl: "",
+  imageUrls: "",
+  videoUrl: "",
   summary: "",
   details: "",
 };
@@ -33,16 +36,22 @@ export function AdminProductPanel() {
   const [message, setMessage] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [categoryItems, setCategoryItems] = useState<Category[]>(fallbackCategories);
+  const [imageFiles, setImageFiles] = useState<FileList | null>(null);
+
+  async function loadCategoryOptions() {
+    setCategoryItems(
+      await fetchMergedCategories().catch(() => fallbackCategories),
+    );
+  }
 
   useEffect(() => {
     async function loadProducts() {
       try {
-        const [nextProducts, nextCategories] = await Promise.all([
+        const [nextProducts] = await Promise.all([
           fetchSupabaseProducts(),
-          fetchSupabaseCategories().catch(() => []),
+          loadCategoryOptions(),
         ]);
         setAdminProducts(nextProducts);
-        setCategoryItems(nextCategories.length > 0 ? nextCategories : fallbackCategories);
       } catch {
         setMessage("Create the Supabase products table before using admin CRUD.");
       } finally {
@@ -54,6 +63,35 @@ export function AdminProductPanel() {
 
     return () => window.clearTimeout(timer);
   }, []);
+
+  useEffect(() => {
+    function handleCategoriesUpdated() {
+      void loadCategoryOptions();
+    }
+
+    window.addEventListener(adminCategoriesUpdatedEvent, handleCategoriesUpdated);
+
+    return () => {
+      window.removeEventListener(adminCategoriesUpdatedEvent, handleCategoriesUpdated);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (categoryItems.length === 0) {
+      return;
+    }
+
+    setForm((currentForm) => {
+      if (categoryItems.some((category) => category.slug === currentForm.categorySlug)) {
+        return currentForm;
+      }
+
+      return {
+        ...currentForm,
+        categorySlug: categoryItems[0].slug as CategorySlug,
+      };
+    });
+  }, [categoryItems]);
 
   const allProducts = useMemo(() => adminProducts, [adminProducts]);
 
@@ -73,12 +111,30 @@ export function AdminProductPanel() {
     event.preventDefault();
 
     const slug = editingSlug ?? createProductSlug(form.name);
+    let uploadedImageUrls: string[] = [];
+
+    if (imageFiles && imageFiles.length > 0) {
+      const { uploadProductImage } = await import("@/lib/supabase-products");
+      uploadedImageUrls = await Promise.all(
+        Array.from(imageFiles).map((file) => uploadProductImage(file)),
+      );
+    }
+
+    const typedImageUrls = form.imageUrls
+      .split("\n")
+      .map((url) => url.trim())
+      .filter(Boolean);
+    const imageUrls = [...uploadedImageUrls, ...typedImageUrls, form.imageUrl]
+      .map((url) => url.trim())
+      .filter(Boolean);
     const product: Product = {
       name: form.name,
       slug,
       categorySlug: form.categorySlug,
       price: Number(form.price),
-      imageUrl: form.imageUrl,
+      imageUrl: imageUrls[0] ?? form.imageUrl,
+      imageUrls,
+      videoUrl: form.videoUrl || undefined,
       summary: form.summary,
       details: form.details,
     };
@@ -87,9 +143,14 @@ export function AdminProductPanel() {
       await upsertSupabaseProduct(product);
       setAdminProducts(await fetchSupabaseProducts());
       setMessage(editingSlug ? "Product updated." : "Product added.");
+      setImageFiles(null);
       resetForm();
-    } catch {
-      setMessage("Unable to save product. Check Supabase table and policies.");
+    } catch (error) {
+      const detail =
+        error && typeof error === "object" && "message" in error
+          ? String(error.message)
+          : "Unknown error";
+      setMessage(`Unable to save product: ${detail}`);
     }
   }
 
@@ -100,6 +161,8 @@ export function AdminProductPanel() {
       categorySlug: product.categorySlug,
       price: String(product.price),
       imageUrl: product.imageUrl,
+      imageUrls: (product.imageUrls ?? [product.imageUrl]).join("\n"),
+      videoUrl: product.videoUrl ?? "",
       summary: product.summary,
       details: product.details,
     });
@@ -169,12 +232,41 @@ export function AdminProductPanel() {
             </label>
 
             <label className="form-field">
-              Image URL
+              Main image URL
               <input
                 value={form.imageUrl}
                 onChange={(event) => updateForm("imageUrl", event.target.value)}
                 placeholder="https://image-url.com/product.jpg"
                 required
+              />
+            </label>
+
+            <label className="form-field">
+              Upload product images
+              <input
+                type="file"
+                accept="image/*"
+                multiple
+                onChange={(event) => setImageFiles(event.target.files)}
+              />
+            </label>
+
+            <label className="form-field">
+              Additional image URLs
+              <textarea
+                value={form.imageUrls}
+                onChange={(event) => updateForm("imageUrls", event.target.value)}
+                placeholder="One image URL per line"
+                rows={3}
+              />
+            </label>
+
+            <label className="form-field">
+              Product video link
+              <input
+                value={form.videoUrl}
+                onChange={(event) => updateForm("videoUrl", event.target.value)}
+                placeholder="Optional video link"
               />
             </label>
 

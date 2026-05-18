@@ -1,8 +1,6 @@
-import { notFound } from "next/navigation";
-import { CategorySidebar } from "@/components/CategorySidebar";
 import { ProductGrid } from "@/components/ProductGrid";
 import { categories, getCategoryBySlug } from "@/lib/categories";
-import { products } from "@/lib/products";
+import { fetchMergedCategories } from "@/lib/supabase-categories";
 
 type CategoryPageProps = {
   params: Promise<{
@@ -10,25 +8,29 @@ type CategoryPageProps = {
   }>;
 };
 
-export function generateStaticParams() {
-  return categories.map((category) => ({
+export async function generateStaticParams() {
+  const mergedCategories = await fetchMergedCategories().catch(() => categories);
+
+  return mergedCategories.map((category) => ({
     slug: category.slug,
   }));
 }
 
 export default async function CategoryPage({ params }: CategoryPageProps) {
   const { slug } = await params;
-  const category = getCategoryBySlug(slug);
-
-  if (!category) {
-    notFound();
-  }
+  const allCategories = await fetchMergedCategories().catch(() => categories);
+  const category = getCategoryBySlug(slug, allCategories) ?? {
+    name: slug
+      .split("-")
+      .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+      .join(" "),
+    slug,
+    description: "Browse available products in this category.",
+  };
 
   return (
     <section className="page-shell bg-zinc-50">
-      <div className="mx-auto grid max-w-7xl gap-8 px-4 py-12 sm:px-6 lg:grid-cols-[260px_1fr] lg:px-8">
-        <CategorySidebar activeSlug={category.slug} />
-
+      <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
         <div className="content-reveal">
           <p className="text-sm font-semibold uppercase tracking-wider text-zinc-500">
             Category
@@ -41,7 +43,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
           </p>
 
           <div className="mt-8">
-            <ProductGrid baseProducts={products} categorySlug={category.slug} />
+            <ProductGrid categorySlug={category.slug} />
           </div>
         </div>
       </div>

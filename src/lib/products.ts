@@ -8,6 +8,8 @@ export type Product = {
   summary: string;
   details: string;
   imageUrl: string;
+  imageUrls?: string[];
+  videoUrl?: string;
 };
 
 const categoryImages = {
@@ -32,6 +34,7 @@ export const products: Product[] = [
     summary: "Stackable containers for a cleaner kitchen counter and pantry.",
     details: "A practical storage set designed for daily home organization, gifting, and bulk household use.",
     imageUrl: categoryImages.kitchen,
+    imageUrls: [categoryImages.kitchen],
   },
   {
     name: "Compact Spice Organizer",
@@ -41,6 +44,7 @@ export const products: Product[] = [
     summary: "A neat rotating organizer for spices, jars, and cooking essentials.",
     details: "Keeps everyday kitchen items visible and easy to access without taking over shelf space.",
     imageUrl: categoryImages.kitchen,
+    imageUrls: [categoryImages.kitchen],
   },
   {
     name: "Dining Serve Tray",
@@ -50,6 +54,7 @@ export const products: Product[] = [
     summary: "Elegant serving tray for tea, snacks, breakfast, and hosting.",
     details: "A simple home essential with a premium look for everyday serving and occasional gatherings.",
     imageUrl: categoryImages.kitchen,
+    imageUrls: [categoryImages.kitchen],
   },
   {
     name: "Fast Charging Hub",
@@ -59,6 +64,7 @@ export const products: Product[] = [
     summary: "Multi-device charging hub for phones, watches, and accessories.",
     details: "A compact charging station built for desks, bedside tables, and travel setups.",
     imageUrl: categoryImages.electronics,
+    imageUrls: [categoryImages.electronics],
   },
   {
     name: "Wireless Earbuds Case",
@@ -68,6 +74,7 @@ export const products: Product[] = [
     summary: "Protective case for keeping earbuds safe and easy to carry.",
     details: "Lightweight accessory protection with a clean everyday style.",
     imageUrl: categoryImages.electronics,
+    imageUrls: [categoryImages.electronics],
   },
   {
     name: "Portable LED Lamp",
@@ -77,6 +84,7 @@ export const products: Product[] = [
     summary: "Rechargeable lamp for study tables, travel, and emergency use.",
     details: "A bright, portable lighting solution for home, office, and outdoor convenience.",
     imageUrl: categoryImages.electronics,
+    imageUrls: [categoryImages.electronics],
   },
   {
     name: "Soft Baby Play Mat",
@@ -86,6 +94,7 @@ export const products: Product[] = [
     summary: "Comfortable play mat for crawling, tummy time, and safe play.",
     details: "Soft surface support for babies and toddlers with a family-friendly design.",
     imageUrl: categoryImages.baby,
+    imageUrls: [categoryImages.baby],
   },
   {
     name: "Learning Blocks Kit",
@@ -95,6 +104,7 @@ export const products: Product[] = [
     summary: "Colorful blocks for early learning, stacking, and play routines.",
     details: "A playful toy set for developing recognition, coordination, and creative building.",
     imageUrl: categoryImages.baby,
+    imageUrls: [categoryImages.baby],
   },
   {
     name: "Baby Care Organizer",
@@ -104,6 +114,7 @@ export const products: Product[] = [
     summary: "Portable organizer for diapers, wipes, bottles, and baby items.",
     details: "Keeps baby care essentials tidy at home and simple to carry while traveling.",
     imageUrl: categoryImages.baby,
+    imageUrls: [categoryImages.baby],
   },
   {
     name: "Car Seat Gap Filler",
@@ -113,6 +124,7 @@ export const products: Product[] = [
     summary: "Prevents small items from falling between car seats.",
     details: "A useful car accessory for improving cabin organization and daily driving comfort.",
     imageUrl: categoryImages.automotive,
+    imageUrls: [categoryImages.automotive],
   },
   {
     name: "Dashboard Phone Holder",
@@ -122,6 +134,7 @@ export const products: Product[] = [
     summary: "Stable holder for hands-free phone viewing while driving.",
     details: "Designed for easy installation, stable grip, and quick phone access.",
     imageUrl: categoryImages.automotive,
+    imageUrls: [categoryImages.automotive],
   },
   {
     name: "Car Trunk Organizer",
@@ -131,6 +144,7 @@ export const products: Product[] = [
     summary: "Foldable organizer for tools, groceries, and travel accessories.",
     details: "A durable storage helper for keeping car trunks clean and ready for trips.",
     imageUrl: categoryImages.automotive,
+    imageUrls: [categoryImages.automotive],
   },
   {
     name: "Facial Cleansing Brush",
@@ -140,6 +154,7 @@ export const products: Product[] = [
     summary: "Gentle cleansing brush for daily skincare routines.",
     details: "Supports a polished personal care routine with simple, easy-to-use cleansing action.",
     imageUrl: categoryImages.beauty,
+    imageUrls: [categoryImages.beauty],
   },
   {
     name: "Travel Grooming Kit",
@@ -149,6 +164,7 @@ export const products: Product[] = [
     summary: "Compact grooming tools packed for home, office, and travel.",
     details: "A convenient kit for neat grooming routines and gifting.",
     imageUrl: categoryImages.beauty,
+    imageUrls: [categoryImages.beauty],
   },
   {
     name: "Wellness Massage Roller",
@@ -158,6 +174,7 @@ export const products: Product[] = [
     summary: "Easy handheld roller for relaxation and daily self-care.",
     details: "A lightweight wellness tool for gentle massage after long workdays or workouts.",
     imageUrl: categoryImages.beauty,
+    imageUrls: [categoryImages.beauty],
   },
 ];
 

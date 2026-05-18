@@ -40,31 +40,29 @@ export function InquiryOrderSummary({ fallbackProduct }: InquiryOrderSummaryProp
   );
 
   return (
-    <div className="mt-6 rounded-2xl border border-white/10 bg-white/10 p-5">
-      <p className="text-sm font-bold text-white">Selected products</p>
-      <div className="mt-4 space-y-3">
+    <div className="checkout-order-summary">
+      <p className="text-sm font-bold text-zinc-900">Your items</p>
+      <ul className="mt-4 space-y-3">
         {items.map((item) => (
-          <div
+          <li
             key={item.product.slug}
-            className="grid grid-cols-[56px_1fr_auto] items-center gap-3"
+            className="flex items-center gap-3 rounded-xl border border-zinc-200 bg-zinc-50 p-2"
           >
-            <div
-              className="h-14 w-14 rounded-xl bg-cover bg-center"
+            <span
+              className="h-14 w-14 shrink-0 rounded-lg bg-cover bg-center"
               style={{ backgroundImage: `url(${item.product.imageUrl})` }}
             />
-            <div className="min-w-0">
-              <p className="truncate text-sm font-bold text-white">
-                {item.product.name}
-              </p>
-              <p className="text-xs text-zinc-300">Qty: {item.quantity}</p>
-            </div>
-            <p className="text-sm font-bold text-white">
+            <span className="min-w-0 flex-1 text-sm font-semibold text-zinc-900">
+              {item.product.name}
+              {item.quantity > 1 ? ` × ${item.quantity}` : ""}
+            </span>
+            <span className="text-sm font-bold text-zinc-700">
               AED {item.product.price * item.quantity}
-            </p>
-          </div>
+            </span>
+          </li>
         ))}
-      </div>
-      <div className="mt-5 flex justify-between border-t border-white/10 pt-4 text-lg font-bold">
+      </ul>
+      <div className="mt-5 flex justify-between border-t border-zinc-200 pt-4 text-lg font-bold text-zinc-950">
         <span>Total</span>
         <span>AED {subtotal}</span>
       </div>

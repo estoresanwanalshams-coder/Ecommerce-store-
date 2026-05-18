@@ -74,7 +74,7 @@ export function Header() {
           </Link>
         </nav>
 
-        <div className="hidden items-center gap-3 md:flex">
+        <div className="header-actions hidden items-center gap-3 md:flex">
           <HeaderSearch />
           <CartIconLink />
         </div>

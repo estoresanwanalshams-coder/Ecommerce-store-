@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { categories, type Category } from "@/lib/categories";
-import { fetchSupabaseCategories } from "@/lib/supabase-categories";
+import { fetchMergedCategories } from "@/lib/supabase-categories";
 
 type DynamicCategoryLinksProps = {
   mobile?: boolean;
@@ -14,8 +14,7 @@ export function DynamicCategoryLinks({ mobile = false }: DynamicCategoryLinksPro
 
   useEffect(() => {
     async function loadCategories() {
-      const nextCategories = await fetchSupabaseCategories().catch(() => []);
-      setItems(nextCategories.length > 0 ? nextCategories : categories);
+      setItems(await fetchMergedCategories().catch(() => categories));
     }
 
     const timer = window.setTimeout(loadCategories, 0);

@@ -2,10 +2,14 @@
 
 import { useEffect, useState } from "react";
 import { createProductSlug } from "@/lib/admin-products";
-import { categories as fallbackCategories, type Category } from "@/lib/categories";
+import {
+  adminCategoriesUpdatedEvent,
+  categories as fallbackCategories,
+  type Category,
+} from "@/lib/categories";
 import {
   deleteSupabaseCategory,
-  fetchSupabaseCategories,
+  fetchMergedCategories,
   upsertSupabaseCategory,
 } from "@/lib/supabase-categories";
 
@@ -16,8 +20,11 @@ export function AdminCategoryPanel() {
   const [message, setMessage] = useState("");
 
   async function loadCategories() {
-    const nextCategories = await fetchSupabaseCategories().catch(() => []);
-    setItems(nextCategories.length > 0 ? nextCategories : fallbackCategories);
+    setItems(await fetchMergedCategories().catch(() => fallbackCategories));
+  }
+
+  function notifyCategoriesUpdated() {
+    window.dispatchEvent(new Event(adminCategoriesUpdatedEvent));
   }
 
   useEffect(() => {
@@ -36,11 +43,16 @@ export function AdminCategoryPanel() {
         description,
       });
       await loadCategories();
+      notifyCategoriesUpdated();
       setName("");
       setDescription("");
       setMessage("Category saved.");
-    } catch {
-      setMessage("Unable to save category. Check Supabase category policies.");
+    } catch (error) {
+      const detail =
+        error && typeof error === "object" && "message" in error
+          ? String(error.message)
+          : "Unknown error";
+      setMessage(`Unable to save category: ${detail}`);
     }
   }
 
@@ -48,6 +60,7 @@ export function AdminCategoryPanel() {
     try {
       await deleteSupabaseCategory(slug);
       await loadCategories();
+      notifyCategoriesUpdated();
       setMessage("Category deleted.");
     } catch {
       setMessage("Unable to delete category. Make sure no products are using it.");
