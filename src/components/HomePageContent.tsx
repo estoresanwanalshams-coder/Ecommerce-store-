@@ -19,7 +19,7 @@ function pickProducts(
   selectedSlugs: string[],
 ) {
   if (selectedSlugs.length === 0 || sourceProducts.length === 0) {
-    return sourceProducts.slice(0, 4);
+    return sourceProducts.slice(0, 8);
   }
 
   const selectedProducts = selectedSlugs
@@ -27,8 +27,8 @@ function pickProducts(
     .filter(Boolean) as Product[];
 
   return selectedProducts.length > 0
-    ? selectedProducts.slice(0, 4)
-    : sourceProducts.slice(0, 4);
+    ? selectedProducts.slice(0, 8)
+    : sourceProducts.slice(0, 8);
 }
 
 export function HomePageContent() {
@@ -100,7 +100,7 @@ export function HomePageContent() {
         {categoryItems.map((category) => {
           const categoryProducts = productSource
             .filter((product) => product.categorySlug === category.slug)
-            .slice(0, 4);
+            .slice(0, 8);
 
           if (categoryProducts.length === 0) {
             return null;
@@ -141,6 +141,8 @@ function HomeProductSection({
     return null;
   }
 
+  const marqueeProducts = [...sectionProducts, ...sectionProducts];
+
   return (
     <section className="mt-14">
       <div className="mb-7 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
@@ -154,10 +156,20 @@ function HomeProductSection({
           {linkLabel}
         </Link>
       </div>
-      <div className="product-grid">
-        {sectionProducts.map((product, index) => (
-          <ProductCard key={product.slug} product={product} index={index + 1} />
-        ))}
+      <div className="home-marquee" aria-label={`${title} products`}>
+        <div className="home-marquee-track">
+          {marqueeProducts.map((product, index) => (
+            <div
+              key={`${product.slug}-${index}`}
+              className="home-marquee-item"
+            >
+              <ProductCard
+                product={product}
+                index={(index % sectionProducts.length) + 1}
+              />
+            </div>
+          ))}
+        </div>
       </div>
     </section>
   );

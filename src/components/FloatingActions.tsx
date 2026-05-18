@@ -2,8 +2,6 @@
 
 import { useEffect, useState } from "react";
 
-const phoneHref = "tel:+971559319338";
-
 export function FloatingActions() {
   const [showScrollTop, setShowScrollTop] = useState(false);
 
@@ -24,13 +22,6 @@ export function FloatingActions() {
 
   return (
     <div className="floating-actions">
-      <a
-        href={phoneHref}
-        className="floating-action-btn floating-action-call"
-        aria-label="Call now"
-      >
-        Call Now
-      </a>
       {showScrollTop ? (
         <button
           type="button"

@@ -47,11 +47,13 @@ export default async function ProductPage({ params }: ProductPageProps) {
             <p className="text-sm font-semibold uppercase tracking-wider text-zinc-500">
               {category?.name}
             </p>
-            <h1 className="mt-3 text-4xl font-bold text-zinc-950 sm:text-5xl">
+            <h1 className="mt-3 text-xl font-bold text-zinc-950 sm:text-2xl">
               {product.name}
             </h1>
-            <p className="mt-5 text-lg leading-8 text-zinc-600">{product.details}</p>
-            <p className="mt-6 text-3xl font-bold text-zinc-950">AED {product.price}</p>
+            <p className="mt-4 whitespace-pre-line text-sm leading-6 text-zinc-600">
+              {product.details}
+            </p>
+            <p className="mt-5 text-xl font-bold text-zinc-950">AED {product.price}</p>
 
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <AddToCartButton

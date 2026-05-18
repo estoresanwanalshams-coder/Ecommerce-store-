@@ -49,6 +49,7 @@ export function HomeBannerCarousel({ extraBannerUrl }: HomeBannerCarouselProps) 
               src={slide}
               alt="Store banner"
               fill
+              loading="eager"
               priority={slide === slides[0]}
               sizes="100vw"
               className="object-cover"
