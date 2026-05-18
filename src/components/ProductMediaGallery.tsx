@@ -22,7 +22,7 @@ export function ProductMediaGallery({ images, videoUrl }: ProductMediaGalleryPro
   const embedUrl = useMemo(() => getYouTubeEmbedUrl(videoUrl), [videoUrl]);
 
   return (
-    <div className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm">
+    <div className="rounded-2xl bg-white p-4 shadow-sm">
       <div
         className="product-image aspect-square rounded-xl bg-zinc-100 bg-cover bg-center"
         style={{ backgroundImage: `url(${activeImage})` }}
@@ -33,8 +33,8 @@ export function ProductMediaGallery({ images, videoUrl }: ProductMediaGalleryPro
             key={image}
             type="button"
             onClick={() => setActiveImage(image)}
-            className={`aspect-square rounded-lg border bg-cover bg-center transition ${
-              activeImage === image ? "border-zinc-950" : "border-zinc-200"
+            className={`aspect-square rounded-lg bg-cover bg-center transition ${
+              activeImage === image ? "ring-2 ring-zinc-900" : "ring-1 ring-transparent"
             }`}
             style={{ backgroundImage: `url(${image})` }}
             aria-label="Preview product image"
@@ -42,7 +42,7 @@ export function ProductMediaGallery({ images, videoUrl }: ProductMediaGalleryPro
         ))}
       </div>
       {embedUrl ? (
-        <div className="mt-5 overflow-hidden rounded-xl border border-zinc-200">
+        <div className="mt-5 overflow-hidden rounded-xl">
           <iframe
             className="aspect-video w-full"
             src={embedUrl}

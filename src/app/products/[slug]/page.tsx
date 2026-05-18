@@ -4,6 +4,7 @@ import { AddToCartButton } from "@/components/AddToCartButton";
 import { ProductCard } from "@/components/ProductCard";
 import { ProductMediaGallery } from "@/components/ProductMediaGallery";
 import { categories, getCategoryBySlug } from "@/lib/categories";
+import type { Product } from "@/lib/products";
 import { fetchMergedCategories } from "@/lib/supabase-categories";
 import { fetchSupabaseProductBySlug, fetchSupabaseProducts } from "@/lib/supabase-products";
 
@@ -28,9 +29,9 @@ export default async function ProductPage({ params }: ProductPageProps) {
   }
 
   const category = getCategoryBySlug(product.categorySlug, allCategories);
-  const relatedProducts = supabaseProducts
-    .filter((relatedProduct) => relatedProduct.categorySlug === product.categorySlug)
-    .filter((relatedProduct) => relatedProduct.slug !== product.slug)
+  const relatedProducts = (supabaseProducts as Product[])
+    .filter((relatedProduct: Product) => relatedProduct.categorySlug === product.categorySlug)
+    .filter((relatedProduct: Product) => relatedProduct.slug !== product.slug)
     .slice(0, 4);
 
   return (
@@ -71,7 +72,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
           <div className="mt-14">
             <h2 className="text-3xl font-bold text-zinc-950">Related products</h2>
             <div className="mt-7 grid grid-cols-2 gap-4 lg:grid-cols-4">
-              {relatedProducts.map((relatedProduct, index) => (
+              {relatedProducts.map((relatedProduct: Product, index: number) => (
                 <ProductCard
                   key={relatedProduct.slug}
                   product={relatedProduct}

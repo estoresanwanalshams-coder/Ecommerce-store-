@@ -30,7 +30,8 @@ export const categories: Category[] = [
     slug: "health-beauty",
     description: "Self-care, grooming, beauty tools, and wellness essentials.",
   },
-] as const satisfies Category[];
+];
+
 
 export type CategorySlug = string;
 

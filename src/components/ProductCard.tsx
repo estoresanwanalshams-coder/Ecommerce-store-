@@ -35,7 +35,7 @@ export function ProductCard({ product, index }: ProductCardProps) {
 
   return (
     <article
-      className="product-card group flex h-full flex-col overflow-hidden rounded-xl border border-zinc-200 bg-white"
+      className="product-card group flex h-full flex-col overflow-hidden bg-white"
       style={{ animationDelay: `${index * 70}ms` }}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
@@ -45,7 +45,7 @@ export function ProductCard({ product, index }: ProductCardProps) {
         prefetch={false}
         className="product-card-media block shrink-0"
       >
-        <div className="product-image relative aspect-[4/3] overflow-hidden rounded-t-xl bg-zinc-100">
+        <div className="product-image relative aspect-[4/3] overflow-hidden bg-zinc-100">
           <Image
             src={activeImage}
             alt={product.name}
