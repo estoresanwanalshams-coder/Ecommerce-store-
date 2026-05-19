@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { memo, useCallback, useState } from "react";
 import { addProductToCart } from "@/lib/cart";
 import type { Product } from "@/lib/products";
 
@@ -10,18 +10,18 @@ type AddToCartButtonProps = {
   label?: string;
 };
 
-export function AddToCartButton({
+export const AddToCartButton = memo(function AddToCartButton({
   product,
   className,
   label = "Add to Cart",
 }: AddToCartButtonProps) {
   const [added, setAdded] = useState(false);
 
-  function handleAddToCart() {
+  const handleAddToCart = useCallback(() => {
     addProductToCart(product);
     setAdded(true);
     window.setTimeout(() => setAdded(false), 1400);
-  }
+  }, [product]);
 
   return (
     <button
@@ -33,4 +33,4 @@ export function AddToCartButton({
       {added ? "Added" : label}
     </button>
   );
-}
+});

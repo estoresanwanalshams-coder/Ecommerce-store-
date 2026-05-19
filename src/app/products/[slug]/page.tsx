@@ -1,12 +1,15 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { AddToCartButton } from "@/components/AddToCartButton";
 import { ProductCard } from "@/components/ProductCard";
 import { ProductMediaGallery } from "@/components/ProductMediaGallery";
 import { categories, getCategoryBySlug } from "@/lib/categories";
-import type { Product } from "@/lib/products";
 import { fetchMergedCategories } from "@/lib/supabase-categories";
-import { fetchSupabaseProductBySlug, fetchSupabaseProducts } from "@/lib/supabase-products";
+import {
+  fetchSupabaseProductBySlug,
+  fetchSupabaseRelatedProducts,
+} from "@/lib/supabase-products";
 
 type ProductPageProps = {
   params: Promise<{
@@ -14,13 +17,40 @@ type ProductPageProps = {
   }>;
 };
 
-export const dynamic = "force-dynamic";
+export const revalidate = 120;
+
+export async function generateMetadata({
+  params,
+}: ProductPageProps): Promise<Metadata> {
+  const { slug } = await params;
+  const product = await fetchSupabaseProductBySlug(slug).catch(() => null);
+
+  if (!product) {
+    return {
+      title: "Product not found",
+    };
+  }
+
+  return {
+    title: product.name,
+    description: product.summary || product.details?.slice(0, 160),
+    openGraph: {
+      title: product.name,
+      description: product.summary || product.details?.slice(0, 160),
+      images: [
+        {
+          url: product.imageUrl,
+          alt: product.name,
+        },
+      ],
+    },
+  };
+}
 
 export default async function ProductPage({ params }: ProductPageProps) {
   const { slug } = await params;
-  const [product, supabaseProducts, allCategories] = await Promise.all([
+  const [product, allCategories] = await Promise.all([
     fetchSupabaseProductBySlug(slug).catch(() => null),
-    fetchSupabaseProducts().catch(() => []),
     fetchMergedCategories().catch(() => categories),
   ]);
 
@@ -29,10 +59,11 @@ export default async function ProductPage({ params }: ProductPageProps) {
   }
 
   const category = getCategoryBySlug(product.categorySlug, allCategories);
-  const relatedProducts = (supabaseProducts as Product[])
-    .filter((relatedProduct: Product) => relatedProduct.categorySlug === product.categorySlug)
-    .filter((relatedProduct: Product) => relatedProduct.slug !== product.slug)
-    .slice(0, 4);
+  const relatedProducts = await fetchSupabaseRelatedProducts(
+    product.categorySlug,
+    product.slug,
+    4,
+  ).catch(() => []);
 
   return (
     <section className="page-shell bg-zinc-50">
@@ -74,7 +105,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
           <div className="mt-14">
             <h2 className="text-3xl font-bold text-zinc-950">Related products</h2>
             <div className="mt-7 grid grid-cols-2 gap-4 lg:grid-cols-4">
-              {relatedProducts.map((relatedProduct: Product, index: number) => (
+              {relatedProducts.map((relatedProduct, index) => (
                 <ProductCard
                   key={relatedProduct.slug}
                   product={relatedProduct}

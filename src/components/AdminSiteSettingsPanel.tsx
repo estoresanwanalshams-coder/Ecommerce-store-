@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { Product } from "@/lib/products";
 import { fetchSupabaseProducts } from "@/lib/supabase-products";
 import {
@@ -14,6 +14,7 @@ type ProductSelectionFieldProps = {
   label: string;
   selectedSlugs: string[];
   products: Product[];
+  maxSelect?: number;
   onChange: (slugs: string[]) => void;
 };
 
@@ -29,7 +30,17 @@ export function AdminSiteSettingsPanel() {
         fetchSupabaseProducts().catch(() => []),
       ]);
 
-      setSettings(nextSettings);
+      const autoNewArrivalSlugs = Array.from(
+        new Set([
+          ...nextProducts.slice(0, 4).map((product) => product.slug),
+          ...nextSettings.newArrivalSlugs,
+        ]),
+      ).slice(0, 8);
+
+      setSettings({
+        ...nextSettings,
+        newArrivalSlugs: autoNewArrivalSlugs,
+      });
       setProducts(nextProducts);
     }
 
@@ -104,6 +115,7 @@ export function AdminSiteSettingsPanel() {
               label="New arrivals"
               products={products}
               selectedSlugs={settings.newArrivalSlugs}
+              maxSelect={8}
               onChange={(slugs) => updateField("newArrivalSlugs", slugs)}
             />
             <ProductSelectionField
@@ -139,28 +151,49 @@ function ProductSelectionField({
   label,
   selectedSlugs,
   products,
+  maxSelect = 4,
   onChange,
 }: ProductSelectionFieldProps) {
+  const [query, setQuery] = useState("");
+  const visibleProducts = useMemo(() => {
+    const normalizedQuery = query.trim().toLowerCase();
+    if (!normalizedQuery) {
+      return products;
+    }
+
+    return products.filter((product) =>
+      product.name.toLowerCase().includes(normalizedQuery),
+    );
+  }, [products, query]);
+
   function toggleSlug(slug: string) {
     if (selectedSlugs.includes(slug)) {
       onChange(selectedSlugs.filter((selectedSlug) => selectedSlug !== slug));
       return;
     }
 
-    onChange([...selectedSlugs, slug].slice(0, 4));
+    onChange([...selectedSlugs, slug].slice(0, maxSelect));
   }
 
   return (
     <div className="rounded-2xl border border-white/10 bg-white/10 p-4">
       <p className="text-sm font-bold text-white">{label}</p>
-      <p className="mt-1 text-xs text-zinc-300">Select up to 4 products.</p>
+      <p className="mt-1 text-xs text-zinc-300">
+        Search and select up to {maxSelect} products.
+      </p>
+      <input
+        value={query}
+        onChange={(event) => setQuery(event.target.value)}
+        placeholder="Search product by name"
+        className="mt-3 w-full rounded-md border border-white/20 bg-white/10 px-3 py-2 text-sm text-white placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-white/40"
+      />
       <div className="mt-4 max-h-72 space-y-2 overflow-y-auto pr-1">
         {products.length === 0 ? (
           <p className="text-sm text-zinc-300">
             Add products in Supabase first, then select them here.
           </p>
         ) : null}
-        {products.map((product) => (
+        {visibleProducts.map((product) => (
           <label
             key={product.slug}
             className="flex cursor-pointer items-center gap-3 rounded-xl border border-white/10 bg-white/5 p-3 text-sm font-semibold text-white transition hover:bg-white/10"

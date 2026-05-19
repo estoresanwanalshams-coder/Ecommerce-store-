@@ -34,7 +34,7 @@ export function HomeBannerCarousel({ extraBannerUrl }: HomeBannerCarouselProps) 
       setActiveIndex((current) => (current + 1) % slides.length);
     }, 5000);
 
-    return () => window.clearTimeout(timer);
+    return () => window.clearInterval(timer);
   }, [slides.length]);
 
   return (
@@ -49,7 +49,7 @@ export function HomeBannerCarousel({ extraBannerUrl }: HomeBannerCarouselProps) 
               src={slide}
               alt="Store banner"
               fill
-              loading="eager"
+              loading={slide === slides[0] ? "eager" : "lazy"}
               priority={slide === slides[0]}
               sizes="100vw"
               className="object-cover"

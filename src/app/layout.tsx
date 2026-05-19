@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
+import { ClientFloatingWidgets } from "@/components/ClientFloatingWidgets";
 import { Footer } from "@/components/Footer";
-import { FloatingActions } from "@/components/FloatingActions";
-import { FloatingWhatsApp } from "@/components/FloatingWhatsApp";
 import { Header } from "@/components/Header";
 import "./globals.css";
 
@@ -46,8 +45,7 @@ export default function RootLayout({
         <Header />
         <main className="flex-1">{children}</main>
         <Footer />
-        <FloatingActions />
-        <FloatingWhatsApp />
+        <ClientFloatingWidgets />
       </body>
     </html>
   );

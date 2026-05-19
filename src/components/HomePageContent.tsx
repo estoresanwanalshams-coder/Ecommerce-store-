@@ -1,25 +1,18 @@
-"use client";
-
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
 import { HomeBannerCarousel } from "@/components/HomeBannerCarousel";
 import { ProductCard } from "@/components/ProductCard";
-import { categories, type Category } from "@/lib/categories";
+import { categories } from "@/lib/categories";
 import type { Product } from "@/lib/products";
 import { fetchMergedCategories } from "@/lib/supabase-categories";
-import { fetchSupabaseProducts } from "@/lib/supabase-products";
-import {
-  defaultSiteSettings,
-  fetchSiteSettings,
-  type SiteSettings,
-} from "@/lib/site-settings";
+import { fetchSupabaseProductsPage } from "@/lib/supabase-products";
+import { defaultSiteSettings, fetchSiteSettings } from "@/lib/site-settings";
 
 function pickProducts(
   sourceProducts: Product[],
   selectedSlugs: string[],
 ) {
   if (selectedSlugs.length === 0 || sourceProducts.length === 0) {
-    return sourceProducts.slice(0, 8);
+    return [];
   }
 
   const selectedProducts = selectedSlugs
@@ -31,45 +24,28 @@ function pickProducts(
     : sourceProducts.slice(0, 8);
 }
 
-export function HomePageContent() {
-  const [settings, setSettings] = useState<SiteSettings>(defaultSiteSettings);
-  const [supabaseProducts, setSupabaseProducts] = useState<Product[]>([]);
-  const [categoryItems, setCategoryItems] = useState<Category[]>(categories);
+function getAutoNewArrivalSlugs(sourceProducts: Product[], selectedSlugs: string[]) {
+  const latestSlugs = sourceProducts.slice(0, 4).map((product) => product.slug);
+  return Array.from(new Set([...latestSlugs, ...selectedSlugs])).slice(0, 8);
+}
 
-  useEffect(() => {
-    async function loadHomeData() {
-      const [nextSettings, nextProducts, nextCategories] = await Promise.all([
-        fetchSiteSettings().catch(() => defaultSiteSettings),
-        fetchSupabaseProducts().catch(() => []),
-        fetchMergedCategories().catch(() => categories),
-      ]);
+export async function HomePageContent() {
+  const [settings, productsPage, categoryItems] = await Promise.all([
+    fetchSiteSettings().catch(() => defaultSiteSettings),
+    fetchSupabaseProductsPage({ page: 1, pageSize: 60 }).catch(() => ({
+      products: [],
+      hasNextPage: false,
+    })),
+    fetchMergedCategories().catch(() => categories),
+  ]);
+  const productSource = productsPage.products;
 
-      setSettings(nextSettings);
-      setSupabaseProducts(nextProducts);
-      setCategoryItems(nextCategories);
-    }
-
-    const timer = window.setTimeout(loadHomeData, 0);
-
-    return () => window.clearTimeout(timer);
-  }, []);
-
-  const productSource = supabaseProducts;
-
-  const newArrivals = useMemo(
-    () => pickProducts(productSource, settings.newArrivalSlugs),
-    [productSource, settings.newArrivalSlugs],
+  const newArrivals = pickProducts(
+    productSource,
+    getAutoNewArrivalSlugs(productSource, settings.newArrivalSlugs),
   );
-
-  const bestSellers = useMemo(
-    () => pickProducts(productSource, settings.bestSellerSlugs),
-    [productSource, settings.bestSellerSlugs],
-  );
-
-  const featuredProducts = useMemo(
-    () => pickProducts(productSource, settings.featuredSlugs),
-    [productSource, settings.featuredSlugs],
-  );
+  const bestSellers = pickProducts(productSource, settings.bestSellerSlugs);
+  const featuredProducts = pickProducts(productSource, settings.featuredSlugs);
 
   return (
     <section className="page-shell">
@@ -144,7 +120,7 @@ function HomeProductSection({
   const marqueeProducts = [...sectionProducts, ...sectionProducts];
 
   return (
-    <section className="mt-14">
+    <section className="home-product-section mt-14">
       <div className="mb-7 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
         <div>
           <p className="text-sm font-semibold uppercase tracking-wider text-zinc-500">

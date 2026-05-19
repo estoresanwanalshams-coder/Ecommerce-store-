@@ -14,6 +14,7 @@ import {
   fetchSupabaseProducts,
   upsertSupabaseProduct,
 } from "@/lib/supabase-products";
+import { normalizeImageUrl, normalizeImageUrls } from "@/lib/image-url";
 import { fetchMergedCategories } from "@/lib/supabase-categories";
 
 const emptyForm = {
@@ -107,6 +108,73 @@ export function AdminProductPanel() {
     setForm(emptyForm);
   }
 
+  function downloadCsv() {
+    if (allProducts.length === 0) {
+      setMessage("No products available to export.");
+      return;
+    }
+
+    const headers = [
+      "Name",
+      "Slug",
+      "Category",
+      "Price",
+      "Main Image URL",
+      "Summary",
+    ];
+    const rows = allProducts.map((product) => [
+      product.name,
+      product.slug,
+      product.categorySlug,
+      String(product.price),
+      product.imageUrl,
+      product.summary,
+    ]);
+    const csvContent = [headers, ...rows]
+      .map((row) =>
+        row
+          .map((value) => `"${String(value).replace(/"/g, '""')}"`)
+          .join(","),
+      )
+      .join("\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "products-list.csv";
+    link.click();
+    URL.revokeObjectURL(url);
+  }
+
+  async function downloadPdf() {
+    if (allProducts.length === 0) {
+      setMessage("No products available to export.");
+      return;
+    }
+
+    const [{ default: jsPDF }, { default: autoTable }] = await Promise.all([
+      import("jspdf"),
+      import("jspdf-autotable"),
+    ]);
+    const pdf = new jsPDF({ orientation: "landscape" });
+    pdf.setFontSize(14);
+    pdf.text("Products List", 14, 14);
+    autoTable(pdf, {
+      startY: 20,
+      head: [["Name", "Slug", "Category", "Price", "Main Image URL"]],
+      body: allProducts.map((product) => [
+        product.name,
+        product.slug,
+        product.categorySlug,
+        `AED ${product.price}`,
+        product.imageUrl,
+      ]),
+      styles: { fontSize: 8, cellPadding: 2 },
+      headStyles: { fillColor: [24, 24, 27] },
+    });
+    pdf.save("products-list.pdf");
+  }
+
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
@@ -120,14 +188,18 @@ export function AdminProductPanel() {
       );
     }
 
-    const mainImageUrl = form.imageUrl.trim();
+    const mainImageUrl = normalizeImageUrl(form.imageUrl);
     const typedImageUrls = form.imageUrls
       .split("\n")
       .map((url) => url.trim())
       .filter(Boolean)
+      .map((url) => normalizeImageUrl(url))
       .filter((url) => url !== mainImageUrl);
-    const imageUrls = [mainImageUrl, ...uploadedImageUrls, ...typedImageUrls]
-      .filter(Boolean);
+    const imageUrls = normalizeImageUrls([
+      mainImageUrl,
+      ...uploadedImageUrls,
+      ...typedImageUrls,
+    ]);
     const product: Product = {
       name: form.name,
       slug,
@@ -326,6 +398,22 @@ export function AdminProductPanel() {
               {message}
             </p>
           ) : null}
+          <div className="mt-4 flex flex-wrap gap-3">
+            <button
+              type="button"
+              onClick={downloadCsv}
+              className="rounded-md border border-zinc-300 px-4 py-2 text-sm font-semibold text-zinc-900 transition hover:border-zinc-900"
+            >
+              Export CSV
+            </button>
+            <button
+              type="button"
+              onClick={() => void downloadPdf()}
+              className="rounded-md border border-zinc-300 px-4 py-2 text-sm font-semibold text-zinc-900 transition hover:border-zinc-900"
+            >
+              Export PDF
+            </button>
+          </div>
 
           <div className="mt-7 space-y-4">
             {isLoading ? (
@@ -339,9 +427,12 @@ export function AdminProductPanel() {
                   key={product.slug}
                   className="cart-row rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm"
                 >
-                  <div
-                    className="h-24 w-24 shrink-0 rounded-xl bg-cover bg-center"
-                    style={{ backgroundImage: `url(${product.imageUrl})` }}
+                  <img
+                    src={product.imageUrl}
+                    alt={product.name}
+                    loading="lazy"
+                    referrerPolicy="no-referrer"
+                    className="h-24 w-24 shrink-0 rounded-xl object-cover"
                   />
                   <div className="min-w-0 flex-1">
                     <p className="text-lg font-bold text-zinc-950">

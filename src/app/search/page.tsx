@@ -1,10 +1,20 @@
+import { Suspense } from "react";
+import { ProductGridSkeleton } from "@/components/ProductGridSkeleton";
 import { SearchResults } from "@/components/SearchResults";
 
 type SearchPageProps = {
   searchParams: Promise<{
     q?: string;
+    page?: string;
   }>;
 };
+
+export const revalidate = 120;
+
+function parsePage(page?: string) {
+  const parsed = Number(page ?? "1");
+  return Number.isFinite(parsed) && parsed > 0 ? Math.floor(parsed) : 1;
+}
 
 export const metadata = {
   title: "Search Products | GCC General Products Store",
@@ -13,7 +23,8 @@ export const metadata = {
 };
 
 export default async function SearchPage({ searchParams }: SearchPageProps) {
-  const { q = "" } = await searchParams;
+  const { q = "", page } = await searchParams;
+  const currentPage = parsePage(page);
 
   return (
     <section className="page-shell">
@@ -28,7 +39,9 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
           Showing products for {q ? `"${q}"` : "all products"}.
         </p>
         <div className="mt-8">
-          <SearchResults query={q} />
+          <Suspense fallback={<ProductGridSkeleton count={8} />}>
+            <SearchResults query={q} page={currentPage} />
+          </Suspense>
         </div>
       </div>
     </section>

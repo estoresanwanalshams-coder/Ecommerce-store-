@@ -1,4 +1,6 @@
+import { Suspense } from "react";
 import { ProductGrid } from "@/components/ProductGrid";
+import { ProductGridSkeleton } from "@/components/ProductGridSkeleton";
 import { categories, getCategoryBySlug } from "@/lib/categories";
 import { fetchMergedCategories } from "@/lib/supabase-categories";
 
@@ -6,7 +8,17 @@ type CategoryPageProps = {
   params: Promise<{
     slug: string;
   }>;
+  searchParams: Promise<{
+    page?: string;
+  }>;
 };
+
+export const revalidate = 120;
+
+function parsePage(page?: string) {
+  const parsed = Number(page ?? "1");
+  return Number.isFinite(parsed) && parsed > 0 ? Math.floor(parsed) : 1;
+}
 
 export async function generateStaticParams() {
   const mergedCategories = await fetchMergedCategories().catch(() => categories);
@@ -16,8 +28,13 @@ export async function generateStaticParams() {
   }));
 }
 
-export default async function CategoryPage({ params }: CategoryPageProps) {
+export default async function CategoryPage({
+  params,
+  searchParams,
+}: CategoryPageProps) {
   const { slug } = await params;
+  const { page } = await searchParams;
+  const currentPage = parsePage(page);
   const allCategories = await fetchMergedCategories().catch(() => categories);
   const category = getCategoryBySlug(slug, allCategories) ?? {
     name: slug
@@ -43,7 +60,14 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
           </p>
 
           <div className="mt-8">
-            <ProductGrid categorySlug={category.slug} />
+            <Suspense fallback={<ProductGridSkeleton count={8} />}>
+              <ProductGrid
+                categorySlug={category.slug}
+                page={currentPage}
+                pageSize={12}
+                basePath={`/categories/${category.slug}`}
+              />
+            </Suspense>
           </div>
         </div>
       </div>

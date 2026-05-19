@@ -1,8 +1,5 @@
-"use client";
-
 import Image from "next/image";
 import Link from "next/link";
-import { useMemo, useState } from "react";
 import { AddToCartButton } from "@/components/AddToCartButton";
 import type { Product } from "@/lib/products";
 
@@ -12,48 +9,40 @@ type ProductCardProps = {
 };
 
 export function ProductCard({ product, index }: ProductCardProps) {
-  const images = useMemo(
-    () =>
-      Array.from(
-        new Set([product.imageUrl, ...(product.imageUrls ?? [])].filter(Boolean)),
-      ),
-    [product.imageUrl, product.imageUrls],
+  const images = Array.from(
+    new Set([product.imageUrl, ...(product.imageUrls ?? [])].filter(Boolean)),
   );
-
-  const [imageIndex, setImageIndex] = useState(0);
-  const activeImage = images[imageIndex] ?? product.imageUrl;
-
-  function handleMouseEnter() {
-    if (images.length > 1) {
-      setImageIndex(1);
-    }
-  }
-
-  function handleMouseLeave() {
-    setImageIndex(0);
-  }
+  const primaryImage = images[0] ?? product.imageUrl;
+  const secondaryImage = images[1];
 
   return (
     <article
       className="product-card group flex h-full flex-col overflow-hidden bg-white"
       style={{ animationDelay: `${index * 70}ms` }}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
     >
       <Link
         href={`/products/${product.slug}`}
-        prefetch={false}
         className="product-card-media block shrink-0"
       >
         <div className="product-image relative aspect-[4/3] overflow-hidden bg-zinc-100">
           <Image
-            src={activeImage}
+            src={primaryImage}
             alt={product.name}
             fill
             sizes="(max-width: 768px) 50vw, 25vw"
             className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
-            unoptimized
+            loading="lazy"
           />
+          {secondaryImage ? (
+            <Image
+              src={secondaryImage}
+              alt={`${product.name} alternate view`}
+              fill
+              sizes="(max-width: 768px) 50vw, 25vw"
+              className="object-cover opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+              loading="lazy"
+            />
+          ) : null}
           <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/15 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
         </div>
       </Link>
@@ -61,7 +50,6 @@ export function ProductCard({ product, index }: ProductCardProps) {
       <div className="flex flex-1 flex-col p-3.5">
         <Link
           href={`/products/${product.slug}`}
-          prefetch={false}
           className="block flex-1"
         >
           <h3 className="line-clamp-2 min-h-[2.75rem] text-[0.98rem] font-bold leading-snug text-zinc-950">
@@ -71,7 +59,6 @@ export function ProductCard({ product, index }: ProductCardProps) {
         <div className="mt-3 flex items-center justify-between gap-2">
           <Link
             href={`/products/${product.slug}`}
-            prefetch={false}
             className="text-base font-bold text-zinc-950"
           >
             AED {product.price}

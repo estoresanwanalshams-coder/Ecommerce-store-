@@ -1,56 +1,55 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
-import type { Product } from "@/lib/products";
-import { fetchSupabaseProducts } from "@/lib/supabase-products";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+
+type SearchSuggestion = {
+  slug: string;
+  name: string;
+  imageUrl: string;
+};
 
 export function HeaderSearch() {
+  const router = useRouter();
   const [query, setQuery] = useState("");
-  const [availableProducts, setAvailableProducts] = useState<Product[]>([]);
+  const [suggestions, setSuggestions] = useState<SearchSuggestion[]>([]);
 
   useEffect(() => {
-    async function loadProducts() {
-      setAvailableProducts(await fetchSupabaseProducts().catch(() => []));
+    const normalizedQuery = query.trim();
+    if (normalizedQuery.length < 1) {
+      setSuggestions([]);
+      return;
     }
 
-    const timer = window.setTimeout(loadProducts, 0);
+    const timer = window.setTimeout(async () => {
+      const response = await fetch(
+        `/api/products/suggest?q=${encodeURIComponent(normalizedQuery)}`,
+      ).catch(() => null);
+
+      if (!response?.ok) {
+        setSuggestions([]);
+        return;
+      }
+
+      const payload = (await response.json()) as { products?: SearchSuggestion[] };
+      setSuggestions(payload.products ?? []);
+    }, 200);
 
     return () => window.clearTimeout(timer);
-  }, []);
-
-  const suggestions = useMemo(() => {
-    const normalizedQuery = query.trim().toLowerCase();
-
-    if (!normalizedQuery) {
-      return [];
-    }
-
-    return availableProducts
-      .filter((product) => {
-        const haystack = [
-          product.name,
-          product.summary,
-          product.categorySlug,
-        ]
-          .join(" ")
-          .toLowerCase();
-
-        return haystack.includes(normalizedQuery);
-      })
-      .slice(0, 8);
-  }, [availableProducts, query]);
+  }, [query]);
 
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const trimmedQuery = query.trim();
 
     if (!trimmedQuery) {
-      window.location.href = "/categories";
+      router.push("/categories");
       return;
     }
 
-    window.location.href = `/search?q=${encodeURIComponent(trimmedQuery)}`;
+    router.push(`/search?q=${encodeURIComponent(trimmedQuery)}`);
   }
 
   return (
@@ -85,13 +84,18 @@ export function HeaderSearch() {
             <Link
               key={product.slug}
               href={`/products/${product.slug}`}
-              prefetch={false}
               className="flex items-center gap-3 px-3 py-2 text-sm font-semibold text-zinc-800 transition hover:bg-zinc-50"
             >
-              <span
-                className="h-10 w-10 rounded-md bg-cover bg-center"
-                style={{ backgroundImage: `url(${product.imageUrl})` }}
-              />
+              <span className="relative h-10 w-10 overflow-hidden rounded-md bg-zinc-100">
+                <Image
+                  src={product.imageUrl}
+                  alt={product.name}
+                  fill
+                  sizes="40px"
+                  loading="lazy"
+                  className="object-cover"
+                />
+              </span>
               {product.name}
             </Link>
           ))}

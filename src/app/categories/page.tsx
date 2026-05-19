@@ -1,6 +1,24 @@
+import { Suspense } from "react";
 import { ProductGrid } from "@/components/ProductGrid";
+import { ProductGridSkeleton } from "@/components/ProductGridSkeleton";
 
-export default function CategoriesPage() {
+type CategoriesPageProps = {
+  searchParams: Promise<{
+    page?: string;
+  }>;
+};
+
+export const revalidate = 120;
+
+function parsePage(page?: string) {
+  const parsed = Number(page ?? "1");
+  return Number.isFinite(parsed) && parsed > 0 ? Math.floor(parsed) : 1;
+}
+
+export default async function CategoriesPage({ searchParams }: CategoriesPageProps) {
+  const { page } = await searchParams;
+  const currentPage = parsePage(page);
+
   return (
     <section className="page-shell bg-zinc-50">
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
@@ -15,7 +33,9 @@ export default function CategoriesPage() {
             Browse every product across all categories in one place.
           </p>
           <div className="mt-8">
-            <ProductGrid />
+            <Suspense fallback={<ProductGridSkeleton count={8} />}>
+              <ProductGrid page={currentPage} pageSize={12} basePath="/categories" />
+            </Suspense>
           </div>
         </div>
       </div>
